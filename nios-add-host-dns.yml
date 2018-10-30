@@ -1,0 +1,11 @@
+---
+- name: Add host as A record
+  nios_a_record:
+    name: {{ new_server_hostname }}
+    ipv4: {{ new_server_ip }}
+    state: present
+    provider:
+      host: "{{ nios_host }}"
+      username: "{{ nios_user }}"
+      password: "{{ nios_passwd }}"
+  connection: local
