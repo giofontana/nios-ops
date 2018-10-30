@@ -12,7 +12,7 @@
 #    nios_passwd: "r3dh4t1!"
   tasks:      
 
-  - name: return next available IP address for network 192.168.0.0/16
+  - name: return next available IP address for network {{ ipv4_range }}
     set_fact:
       ipaddr: "{{ lookup('nios_next_ip', ipv4_range, provider={'host': nios_host, 'username': nios_user, 'password': nios_passwd}) }}"
     register: nios_next_ip
@@ -47,4 +47,22 @@
         username: "{{ nios_user }}"
         password: "{{ nios_passwd }}"
     connection: local    
-    
+
+  - name: Update Task with New IP and Hostname Information
+    uri:
+      url: "{{ manageiq.api_url }}/api/provision_requests/{{ miq_provision_request_id }}/request_tasks/{{ miq_provision_id }}"
+      method: POST
+      body_format: json
+      body:
+        action: edit
+        resource:
+          options:
+            addr_mode: ["static", "Static"]
+            ip_addr: "{{ new_server_ip }}"
+            subnet_mask: "{{ new_server_subnet }}"
+            gateway: "{{ new_server_gateway }}"
+      validate_certs: no
+      headers:
+        X-Auth-Token: "{{ manageiq.api_token }}"
+      body_format: json
+      status_code: 200
