@@ -4,6 +4,7 @@
   gather_facts: no
   remote_user: root
 #  vars:
+#    ipv4_range: "192.168.0.0/16"
 #    new_server_hostname: "teste123.example.com"
 #    new_server_ip: "192.168.0.155"
 #    nios_host: "129.146.209.37"
@@ -13,7 +14,7 @@
 
   - name: return next available IP address for network 192.168.0.0/16
     set_fact:
-      ipaddr: "{{ lookup('nios_next_ip', '192.168.0.0/16', provider={'host': '129.146.209.37', 'username': 'admin', 'password': 'r3dh4t1!'}) }}"
+      ipaddr: "{{ lookup('nios_next_ip', ipv4_range, provider={'host': nios_host, 'username': nios_user, 'password': nios_passwd}) }}"
     register: nios_next_ip
 
   - debug:
