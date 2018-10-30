@@ -1,11 +1,49 @@
 ---
-- name: Add host as A record
-  nios_a_record:
-    name: {{ new_server_hostname }}
-    ipv4: {{ new_server_ip }}
-    state: present
-    provider:
-      host: "{{ nios_host }}"
-      username: "{{ nios_user }}"
-      password: "{{ nios_passwd }}"
+- hosts: localhost
   connection: local
+  gather_facts: no
+  remote_user: root
+#  vars:
+#    new_server_hostname: "teste123.example.com"
+#    new_server_ip: "192.168.0.155"
+#    nios_host: "129.146.209.37"
+#    nios_user: "admin"
+#    nios_passwd: "r3dh4t1!"
+  tasks:      
+
+  - name: return next available IP address for network 192.168.0.0/16
+    set_fact:
+      ipaddr: "{{ lookup('nios_next_ip', '192.168.0.0/16', provider={'host': '129.146.209.37', 'username': 'admin', 'password': 'r3dh4t1!'}) }}"
+    register: nios_next_ip
+
+  - debug:
+      msg: "nios_next_ip = {{ nios_next_ip }} / {{ nios_next_ip.ansible_facts.ipaddr[0] }}"
+
+  - set_fact:
+      new_server_ip: "{{ nios_next_ip.ansible_facts.ipaddr[0] }}"
+
+  - debug:
+      msg: "new_server_ip = {{ new_server_ip }}"
+
+  - name: Add host as A record
+    nios_a_record:
+      name: "{{ new_server_hostname }}"
+      ipv4: "{{ new_server_ip }}"
+      state: present
+      provider:
+        host: "{{ nios_host }}"
+        username: "{{ nios_user }}"
+        password: "{{ nios_passwd }}"
+    connection: local
+
+  - name: Add host as PTR record
+    nios_ptr_record:
+      ptrdname: "{{ new_server_hostname }}"
+      ipv4: "{{ new_server_ip }}"
+      state: present
+      provider:
+        host: "{{ nios_host }}"
+        username: "{{ nios_user }}"
+        password: "{{ nios_passwd }}"
+    connection: local    
+    
